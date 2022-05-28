@@ -1,13 +1,4 @@
 #include "common.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-
-#define BUFSZ 500
 
 void leEntrada(char *entrada){
     fflush(stdin);
@@ -42,7 +33,7 @@ int main(int argc, char **argv) {
 
 	while(1){
 		leEntrada(mensagem_enviada);
-		
+
 		int count_send = send(s_cliente, mensagem_enviada, strlen(mensagem_enviada), 0);
 		if (count_send < 1){
 			exit(-1);

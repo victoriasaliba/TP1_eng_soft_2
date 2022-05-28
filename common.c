@@ -1,8 +1,4 @@
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arpa/inet.h>
+#include "common.h"
 
 //  Verifica se o protocolo é IPv4 ou IPv6. Caso seja nenhum dos dois, retorna -1
 int defineProtocolo(const char *stringEndereco, const char *stringPorta, struct sockaddr_storage *storage){
@@ -17,7 +13,7 @@ int defineProtocolo(const char *stringEndereco, const char *stringPorta, struct 
     porta = htons(porta); //Converte o inteiro da representação de dispositivo para a representação da rede
 
     //  Testa o IPv4
-    struct in_addr enderecoIPv4; 
+    struct in_addr enderecoIPv4;
     if (inet_pton(AF_INET, stringEndereco, &enderecoIPv4)) {
         struct sockaddr_in *endereco4 = (struct sockaddr_in *)storage;
         endereco4->sin_family = AF_INET;
@@ -27,7 +23,7 @@ int defineProtocolo(const char *stringEndereco, const char *stringPorta, struct 
     }
 
     //Se der erro, tenta o IPv6
-    struct in6_addr enderecoIPv6; 
+    struct in6_addr enderecoIPv6;
     if (inet_pton(AF_INET6, stringEndereco, &enderecoIPv6)) {
         struct sockaddr_in6 *endereco6 = (struct sockaddr_in6 *)storage;
         endereco6->sin6_family = AF_INET6;
@@ -42,7 +38,7 @@ int defineProtocolo(const char *stringEndereco, const char *stringPorta, struct 
 
 //  Define o protocolo do servidor
 int defineProtocoloServidor(const char *protocolo, const char *stringPorta, struct sockaddr_storage *storage){
-        uint16_t porta = (uint16_t)atoi(stringPorta); 
+        uint16_t porta = (uint16_t)atoi(stringPorta);
         if(porta == 0){
             return -1;
     }
