@@ -80,15 +80,6 @@ char* removeSubstringDeString(char *frase, char *palavra){
     return frase;
 }
 
-int boolSensorJaInstalado(float(**matriz)[4][4], int sensor, int equipamento){
-    if((**matriz)[equipamento-1][sensor-1] != -1){
-        return 1;
-    }else{
-        return 0;
-    }
-}
-
-
 char* instalarSensor(float(**matriz)[4][4], int equipamentoID, int sensorID){
     static char resposta[50];
 
@@ -100,88 +91,69 @@ char* instalarSensor(float(**matriz)[4][4], int equipamentoID, int sensorID){
     return resposta;
 }
 
-char* comandoAddSensor(float(*matriz)[4][4], char *comando){
-    static char resposta_add[100];
-    memset(resposta_add, 0, 100);
+char* comandoAddSensor(struct EstruturaDeControle *c, float(*matriz)[4][4], char *comando){
 
     char substring[] = {"add sensor "};
     sprintf(comando, "%s",removeSubstringDeString(comando, substring));
 
-    int aux = 1;
-    char *palavra_atual = strtok(comando, " ");
-    int sensores_solicitados[] = {-1, -1, -1, -1};
-    int sensores_validos[] = {-1, -1, -1, -1};
+    iniciarEstrutura(c, comando);
 
-    while(strcmp(palavra_atual,"in")){
-        int sensor_id = atoi(palavra_atual);
+    while(strcmp(c->palavra_atual,"in")){
+        int sensor_id = atoi(c->palavra_atual);
 
-        if(sensor_id < 1 || sensor_id > 4){
+        if(elementoInvalido(sensor_id)){
             return "invalid sensor";
         }
-        if(aux + quantidadeAtual >= MAX_SENSORS){
+        if(c->aux + quantidadeAtual >= MAX_SENSORS){
             return "limit exceeded";
         }
-        sensores_solicitados[aux-1] = sensor_id;
-        palavra_atual = strtok(NULL, " ");
-        aux++;
+        c->sensores_solicitados[c->aux-1] = sensor_id;
+        c->palavra_atual = strtok(NULL, " ");
+        c->aux++;
     }
 
-    palavra_atual = strtok(NULL, " "); //depois do in
-    int equipamento_id = atoi(palavra_atual);
-    if(equipamento_id < 1 || equipamento_id > 4){
+    c->palavra_atual = strtok(NULL, " "); //depois do in
+    int equipamento_id = atoi(c->palavra_atual);
+
+    if(elementoInvalido(equipamento_id)){
         return "invalid equipament";
     }
 
-    int flag_aomenos1valido = 0;
-    int flag_aomenos1jaexistente = 0;
-    // Vê quais sensores são válidos para serem instalados
-    for(int i=0; i<4; i++){
-        if(sensores_solicitados[i] == -1){
-            break;
-        }
-        sensores_validos[i] = !boolSensorJaInstalado(&matriz, sensores_solicitados[i], equipamento_id);
-        if(sensores_validos[i]){
-            flag_aomenos1valido = 1;
-        }
-        if(!sensores_validos[i]){
-            flag_aomenos1jaexistente = flag_aomenos1jaexistente+1;
-        }
-    }
-
-    if(flag_aomenos1valido){
-        sprintf(resposta_add, "sensor ");
+    checarSensoresValidos(c, matriz, equipamento_id);
+    if(c->flag_aomenos1valido){
+        sprintf(c->resposta, "sensor ");
     }
 
     //Instala sensores validos
     for(int i=0; i<4; i++){
-        if(sensores_validos[i] == -1) break;
-        if(sensores_validos[i]){
-            strcat(resposta_add, instalarSensor(&matriz, equipamento_id, sensores_solicitados[i]));
-            strcat(resposta_add, " ");
+        if(c->sensores_validos[i] == -1) break;
+        if(c->sensores_validos[i]){
+            strcat(c->resposta, instalarSensor(&matriz, equipamento_id, c->sensores_solicitados[i]));
+            strcat(c->resposta, " ");
         }
     }
+    if(c->flag_aomenos1valido){
+        strcat(c->resposta, "added");
+    }
+    if(c->flag_aomenos1jaexistente && c->flag_aomenos1valido){
+        strcat(c->resposta, " ");
+    }
 
-    if(flag_aomenos1valido){
-        strcat(resposta_add, "added");
-    }
-    if(flag_aomenos1jaexistente && flag_aomenos1valido){
-        strcat(resposta_add, " ");
-    }
     // Informa sensores já existentes
-    int qnt = 0;
+    c->aux = 0;
     for(int i=0; i<4; i++){
-        if(sensores_validos[i] == -1) break;
-        if(!sensores_validos[i]){
+        if(c->sensores_validos[i] == -1) break;
+        if(!c->sensores_validos[i]){
             static char frase[50];
-            sprintf(frase, "sensor 0%d already exists in 0%d", sensores_solicitados[i], equipamento_id);
-            strcat(resposta_add, frase);
-            qnt++;
-            if(qnt != flag_aomenos1jaexistente){
-                strcat(resposta_add, " ");
+            sprintf(frase, "sensor 0%d already exists in 0%d", c->sensores_solicitados[i], equipamento_id);
+            strcat(c->resposta, frase);
+            c->aux++;
+            if(c->aux != c->flag_aomenos1jaexistente){
+                strcat(c->resposta, " ");
             }
         }
     }
-    return resposta_add;
+    return c->resposta;
 }
 
 
@@ -473,9 +445,11 @@ int main(int argc, char **argv) {
         int acao = retornaAcao(mensagem_recebida);
         int flag_conexao = 1;
 
+        struct EstruturaDeControle c;
+
         switch (acao){
             case ADD:
-                sprintf(mensagem_enviada, "%s", comandoAddSensor(&matriz, mensagem_recebida));
+                sprintf(mensagem_enviada, "%s", comandoAddSensor(&c, &matriz, mensagem_recebida));
                 break;
             case REMOVE:
                 sprintf(mensagem_enviada, "%s", comandoRemoveSensor(&matriz, mensagem_recebida));
