@@ -80,17 +80,6 @@ char* removeSubstringDeString(char *frase, char *palavra){
     return frase;
 }
 
-char* instalarSensor(float(**matriz)[4][4], int equipamentoID, int sensorID){
-    static char resposta[50];
-
-    float valorAleatorio = (rand() % 1000);
-    valorAleatorio = valorAleatorio/100;
-    (**matriz)[equipamentoID-1][sensorID-1] = valorAleatorio;
-    quantidadeAtual++;
-    sprintf(resposta, "0%d", sensorID);
-    return resposta;
-}
-
 char* comandoAddSensor(struct EstruturaDeControle *c, float(*matriz)[4][4], char *comando){
 
     char substring[] = {"add sensor "};
@@ -120,52 +109,12 @@ char* comandoAddSensor(struct EstruturaDeControle *c, float(*matriz)[4][4], char
     }
 
     checarSensoresValidos(c, matriz, equipamento_id);
-    if(c->flag_aomenos1valido){
-        sprintf(c->resposta, "sensor ");
-    }
 
-    //Instala sensores validos
-    for(int i=0; i<4; i++){
-        if(c->sensores_validos[i] == -1) break;
-        if(c->sensores_validos[i]){
-            strcat(c->resposta, instalarSensor(&matriz, equipamento_id, c->sensores_solicitados[i]));
-            strcat(c->resposta, " ");
-        }
-    }
-    if(c->flag_aomenos1valido){
-        strcat(c->resposta, "added");
-    }
-    if(c->flag_aomenos1jaexistente && c->flag_aomenos1valido){
-        strcat(c->resposta, " ");
-    }
+    instalarSensoresValidos(c, matriz, equipamento_id);
 
-    // Informa sensores já existentes
-    c->aux = 0;
-    for(int i=0; i<4; i++){
-        if(c->sensores_validos[i] == -1) break;
-        if(!c->sensores_validos[i]){
-            static char frase[50];
-            sprintf(frase, "sensor 0%d already exists in 0%d", c->sensores_solicitados[i], equipamento_id);
-            strcat(c->resposta, frase);
-            c->aux++;
-            if(c->aux != c->flag_aomenos1jaexistente){
-                strcat(c->resposta, " ");
-            }
-        }
-    }
+    informarSensoresExistentes(c, equipamento_id);
+
     return c->resposta;
-}
-
-
-char* removerSensor(float(**matriz)[4][4], int equipamentoID, int sensorID){
-    static char resposta[50];
-    if((**matriz)[equipamentoID-1][sensorID-1] != -1){
-        (**matriz)[equipamentoID-1][sensorID-1] = -1;
-        sprintf(resposta, "0%d", sensorID);
-        quantidadeAtual--;
-    }
-
-    return resposta;
 }
 
 char* comandoRemoveSensor(float(*matriz)[4][4], char *comando){
