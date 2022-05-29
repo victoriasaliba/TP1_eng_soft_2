@@ -10,6 +10,7 @@ void iniciarEstrutura(struct EstruturaDeControle *c, char *comando) {
   c->aux = 1;
   c->flag_aomenos1valido = 0;
   c->flag_aomenos1jaexistente = 0;
+  c->flag_aomenos1naoexistente = 0;
 
   for (int i = 0; i < 4; i++) {
     c->sensores_solicitados[i] = -1;
@@ -31,6 +32,29 @@ void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], 
 
     if(!c->sensores_validos[i]){
       c->flag_aomenos1jaexistente = c->flag_aomenos1jaexistente+1;
+    }
+  }
+
+  if(c->flag_aomenos1valido){
+    sprintf(c->resposta, "sensor ");
+  }
+}
+
+
+void checarSensoresValidosParaRemover(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id) {
+  for(int i=0; i<4; i++){
+    if(c->sensores_solicitados[i] == -1){
+      break;
+    }
+
+    c->sensores_validos[i] = boolSensorJaInstalado(&matriz, c->sensores_solicitados[i], equipamento_id);
+
+    if(c->sensores_validos[i]){
+      c->flag_aomenos1valido = 1;
+    }
+
+    if(!c->sensores_validos[i]){
+      c->flag_aomenos1naoexistente = c->flag_aomenos1naoexistente+1;
     }
   }
 
@@ -74,6 +98,23 @@ char* instalarSensor(float(**matriz)[4][4], int equipamentoID, int sensorID) {
   return resposta;
 }
 
+void removerSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id) {
+  for(int i=0; i<4; i++){
+        if(c->sensores_validos[i] == -1) break;
+        if(c->sensores_validos[i]){
+            strcat(c->resposta, removerSensor(&matriz, equipamento_id, c->sensores_solicitados[i]));
+            strcat(c->resposta, " ");
+        }
+    }
+    if(c->flag_aomenos1valido){
+        strcat(c->resposta, "removed");
+    }
+    if(c->flag_aomenos1naoexistente){
+        strcat(c->resposta, " ");
+    } 
+}
+
+
 char* removerSensor(float(**matriz)[4][4], int equipamentoID, int sensorID) {
   static char resposta[50];
   if((**matriz)[equipamentoID-1][sensorID-1] != -1){
@@ -95,6 +136,22 @@ void informarSensoresExistentes(struct EstruturaDeControle *c, int equipamento_i
       strcat(c->resposta, frase);
       c->aux++;
       if(c->aux != c->flag_aomenos1jaexistente){
+        strcat(c->resposta, " ");
+      }
+    }
+  }
+}
+
+void informarSensoresNaoExistentes(struct EstruturaDeControle *c, int equipamento_id) {
+  c->aux = 0;
+  for(int i=0; i<4; i++){
+    if(c->sensores_validos[i] == -1) break;
+    if(!c->sensores_validos[i]){
+      static char frase[50];
+      sprintf(frase, "sensor 0%d does not exists in 0%d", c->sensores_solicitados[i], equipamento_id);
+      strcat(c->resposta, frase);
+      c->aux++;
+      if(c->aux != c->flag_aomenos1naoexistente){
         strcat(c->resposta, " ");
       }
     }

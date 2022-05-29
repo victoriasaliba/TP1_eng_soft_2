@@ -117,85 +117,41 @@ char* comandoAddSensor(struct EstruturaDeControle *c, float(*matriz)[4][4], char
     return c->resposta;
 }
 
-char* comandoRemoveSensor(float(*matriz)[4][4], char *comando){
+char* comandoRemoveSensor(struct EstruturaDeControle *c,float(*matriz)[4][4], char *comando){
     static char resposta_remove[100];
     memset(resposta_remove, 0, 100);
 
     char substring[] = {"remove sensor "};
     sprintf(comando, "%s",removeSubstringDeString(comando, substring));
 
-    char *palavra_atual = strtok(comando, " ");
-    int sensores_solicitados[] = {-1, -1, -1, -1};
-    int sensores_validos[] = {-1, -1, -1, -1};
-    int aux = 1;
+    iniciarEstrutura(c, comando);
 
-    while(strcmp(palavra_atual,"in")){
-        int sensor_id = atoi(palavra_atual);
+    while(strcmp(c->palavra_atual,"in")){
+        int sensor_id = atoi(c->palavra_atual);
 
-        if(sensor_id < 1 || sensor_id > 4){
+         if(elementoInvalido(sensor_id)){
             return "invalid sensor";
         }
 
-        sensores_solicitados[aux-1] = sensor_id;
-        palavra_atual = strtok(NULL, " ");
-        aux++;
+        c->sensores_solicitados[c->aux-1] = sensor_id;
+        c->palavra_atual = strtok(NULL, " ");
+        c->aux++;
     }
 
-    palavra_atual = strtok(NULL, " "); // depois do in
-    int equipamento_id = atoi(palavra_atual);
+    c->palavra_atual = strtok(NULL, " "); //depois do in
+    int equipamento_id = atoi(c->palavra_atual);
 
-    if(equipamento_id < 1 || equipamento_id > 4){
+    if(elementoInvalido(equipamento_id)){
         return "invalid equipament";
     }
 
-    int flag_aomenos1valido = 0;
-    int flag_aomenos1naoexistente = 0;
-    // Vê quais sensores são válidos para serem removidos
-    for(int i=0; i<4; i++){
-        if(sensores_solicitados[i] == -1){
-            break;
-        }
-        sensores_validos[i] = boolSensorJaInstalado(&matriz, sensores_solicitados[i], equipamento_id);
-        if(sensores_validos[i]){
-            flag_aomenos1valido = 1;
-        }
-        if(!sensores_validos[i]){
-            flag_aomenos1naoexistente = flag_aomenos1naoexistente+1;
-        }
-    }
+    checarSensoresValidosParaRemover(c, matriz, equipamento_id);
 
-    if(flag_aomenos1valido){
-        sprintf(resposta_remove, "sensor ");
-    }
-    //Remove sensores validos
-    for(int i=0; i<4; i++){
-        if(sensores_validos[i] == -1) break;
-        if(sensores_validos[i]){
-            strcat(resposta_remove, removerSensor(&matriz, equipamento_id, sensores_solicitados[i]));
-            strcat(resposta_remove, " ");
-        }
-    }
-    if(flag_aomenos1valido){
-        strcat(resposta_remove, "removed");
-    }
-    if(flag_aomenos1naoexistente){
-        strcat(resposta_remove, " ");
-    }
-    int qnt = 0;
-    // Informa sensores já existentes
-    for(int i=0; i<4; i++){
-        if(sensores_validos[i] == -1) break;
-        if(!sensores_validos[i]){
-            static char frase[50];
-            sprintf(frase, "sensor 0%d does not exists in 0%d", sensores_solicitados[i], equipamento_id);
-            strcat(resposta_remove, frase);
-            qnt++;
-            if(qnt != flag_aomenos1naoexistente){
-                strcat(resposta_remove, " ");
-            }
-        }
-    }
-    return resposta_remove;
+    removerSensoresValidos(c, matriz, equipamento_id);
+
+    informarSensoresNaoExistentes(c, equipamento_id);
+
+    return c->resposta;
 
 }
 
@@ -401,7 +357,7 @@ int main(int argc, char **argv) {
                 sprintf(mensagem_enviada, "%s", comandoAddSensor(&c, &matriz, mensagem_recebida));
                 break;
             case REMOVE:
-                sprintf(mensagem_enviada, "%s", comandoRemoveSensor(&matriz, mensagem_recebida));
+                sprintf(mensagem_enviada, "%s", comandoRemoveSensor(&c, &matriz, mensagem_recebida));
                 break;
             case LIST:
                 sprintf(mensagem_enviada, "%s", comandoListSensors(&matriz, mensagem_recebida));

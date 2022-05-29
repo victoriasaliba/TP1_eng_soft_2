@@ -1,8 +1,6 @@
 # Trabalho Prático 1 Engenharia de Software 2
 
-Isabelle Vieira Barbosa
-Leandro Marques Venceslau de Souza
-Victória Rocha Saliba
+Isabelle Vieira Barbosa, Leandro Marques Venceslau de Souza, Victória Rocha Saliba
 
 ## Explicação do sistema
 

@@ -17,12 +17,16 @@ struct EstruturaDeControle {
   int sensores_validos[4];
   int flag_aomenos1valido;
   int flag_aomenos1jaexistente;
+  int flag_aomenos1naoexistente;
 };
 
 void iniciarEstrutura(struct EstruturaDeControle *c, char *comando);
 void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id);
+void checarSensoresValidosParaRemover(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id);
 void instalarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id);
+void removerSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id);
 void informarSensoresExistentes(struct EstruturaDeControle *c, int equipamento_id);
+void informarSensoresNaoExistentes(struct EstruturaDeControle *c, int equipamento_id);
 
 char* instalarSensor(float(**matriz)[4][4], int equipamentoID, int sensorID);
 char* removerSensor(float(**matriz)[4][4], int equipamentoID, int sensorID);
