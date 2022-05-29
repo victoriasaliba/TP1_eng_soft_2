@@ -108,7 +108,7 @@ char* comandoAddSensor(struct EstruturaDeControle *c, float(*matriz)[4][4], char
         return "invalid equipament";
     }
 
-    checarSensoresValidos(c, matriz, equipamento_id);
+    checarSensoresValidos(c, matriz, equipamento_id, 1);
 
     instalarSensoresValidos(c, matriz, equipamento_id);
 
@@ -145,7 +145,7 @@ char* comandoRemoveSensor(struct EstruturaDeControle *c,float(*matriz)[4][4], ch
         return "invalid equipament";
     }
 
-    checarSensoresValidosParaRemover(c, matriz, equipamento_id);
+    checarSensoresValidos(c, matriz, equipamento_id, 0);
 
     removerSensoresValidos(c, matriz, equipamento_id);
 
@@ -195,96 +195,38 @@ char* comandoListSensors(float(*matriz)[4][4],char *comando){
     return resposta_list;
 }
 
- char* consultarVariavel(float(**matriz)[4][4], int equipamentoID, int sensorID){
-    static char resposta[50];
-    if((**matriz)[equipamentoID-1][sensorID-1] != -1){
-        sprintf(resposta, "%0.2f", (**matriz)[equipamentoID-1][sensorID-1]);
-    }else{
-        sprintf(resposta, "0%d not installed", sensorID);
-    }
-    return resposta;
-}
-
-char* comandoRead(float(*matriz)[4][4], char *comando){
-    static char resposta_read[100];
-    memset(resposta_read, 0, 100);
-
+char* comandoRead(struct EstruturaDeControle *c, float(*matriz)[4][4], char *comando){
     char substring[] = {"read "};
     sprintf(comando, "%s",removeSubstringDeString(comando, substring));
 
-    int aux = 1;
-    char *palavra_atual = strtok(comando, " ");
-    int sensores_solicitados[] = {-1, -1, -1, -1};
-    int sensores_validos[] = {-1, -1, -1, -1};
+    iniciarEstrutura(c, comando);
 
-    while(strcmp(palavra_atual,"in")){
-        int sensor_id = atoi(palavra_atual);
+    while(strcmp(c->palavra_atual,"in")){
+        int sensor_id = atoi(c->palavra_atual);
 
-        if(sensor_id < 1 || sensor_id > 4){
+        if(elementoInvalido(sensor_id)){
             return "invalid sensor";
         }
 
-        sensores_solicitados[aux-1] = sensor_id;
-        palavra_atual = strtok(NULL, " ");
-        aux++;
+        c->sensores_solicitados[c->aux-1] = sensor_id;
+        c->palavra_atual = strtok(NULL, " ");
+        c->aux++;
     }
 
-    palavra_atual = strtok(NULL, " "); //depois do in
-    int equipamento_id = atoi(palavra_atual);
-    if(equipamento_id < 1 || equipamento_id > 4){
+    c->palavra_atual = strtok(NULL, " "); //depois do in
+    int equipamento_id = atoi(c->palavra_atual);
+    
+    if(elementoInvalido(equipamento_id)){
         return "invalid equipament";
     }
 
-    int flag_aomenos1valido = 0;
-    int flag_aomenos1naoexistente = 0;
+    checarSensoresValidos(c, matriz, equipamento_id, 0);
 
-    // Vê quais sensores não estão instalados ainda
-    for(int i=0; i<4; i++){
-        if(sensores_solicitados[i] == -1){
-            break;
-        }
-        sensores_validos[i] = boolSensorJaInstalado(&matriz, sensores_solicitados[i], equipamento_id);
+    lerSensoresValidos(c, matriz, equipamento_id);
+    
+    informarSensoresNaoExistentes(c, equipamento_id);
 
-        if(!sensores_validos[i]){
-            flag_aomenos1naoexistente = flag_aomenos1naoexistente+1;
-        }else{
-            flag_aomenos1valido = 1;
-        }
-    }
-
-    int flag_espaco = 0;
-    //Lê sensores válidos
-    for(int i=0; i<4; i++){
-        if(sensores_validos[i] == -1) break;
-        if(sensores_validos[i]){
-            if(flag_espaco){
-                strcat(resposta_read, " ");
-            }
-            strcat(resposta_read, consultarVariavel(&matriz, equipamento_id, sensores_solicitados[i]));
-            flag_espaco = 1;
-        }
-    }
-
-    if(flag_aomenos1valido && flag_aomenos1naoexistente){
-        strcat(resposta_read, " and ");
-    }
-
-    //int qnt = 0;
-    // Informa sensores não instalados
-    for(int i=0; i<4; i++){
-        if(sensores_validos[i] == -1) break;
-        if(!sensores_validos[i]){
-            static char frase[50];
-            sprintf(frase, "0%d", sensores_solicitados[i]);
-            strcat(resposta_read, frase);
-            strcat(resposta_read, " ");
-        }
-    }
-    if(flag_aomenos1naoexistente){
-        strcat(resposta_read, "not installed");
-    }
-
-    return resposta_read;
+    return c->resposta;
 }
 
 
@@ -363,7 +305,7 @@ int main(int argc, char **argv) {
                 sprintf(mensagem_enviada, "%s", comandoListSensors(&matriz, mensagem_recebida));
                 break;
             case READ:
-                sprintf(mensagem_enviada, "%s", comandoRead(&matriz, mensagem_recebida));
+                sprintf(mensagem_enviada, "%s", comandoRead(&c, &matriz, mensagem_recebida));
                 break;
             case KILL:
                 fechaConexao(csock);

@@ -18,16 +18,19 @@ void iniciarEstrutura(struct EstruturaDeControle *c, char *comando) {
   }
 }
 
-void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id) {
+void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id, int boolInstalarOuRemover){
   for(int i=0; i<4; i++){
     if(c->sensores_solicitados[i] == -1){
       break;
     }
 
-    c->sensores_validos[i] = !boolSensorJaInstalado(&matriz, c->sensores_solicitados[i], equipamento_id);
+    int jaInstalado = boolSensorJaInstalado(&matriz, c->sensores_solicitados[i], equipamento_id);
+    c->sensores_validos[i] = (boolInstalarOuRemover)? !jaInstalado : jaInstalado;
 
     if(c->sensores_validos[i]){
       c->flag_aomenos1valido = 1;
+    }else{
+      c->flag_aomenos1naoexistente = 1;
     }
 
     if(!c->sensores_validos[i]){
@@ -41,33 +44,37 @@ void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], 
 }
 
 
-void checarSensoresValidosParaRemover(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id) {
-  for(int i=0; i<4; i++){
-    if(c->sensores_solicitados[i] == -1){
-      break;
-    }
-
-    c->sensores_validos[i] = boolSensorJaInstalado(&matriz, c->sensores_solicitados[i], equipamento_id);
-
-    if(c->sensores_validos[i]){
-      c->flag_aomenos1valido = 1;
-    }
-
-    if(!c->sensores_validos[i]){
-      c->flag_aomenos1naoexistente = c->flag_aomenos1naoexistente+1;
-    }
-  }
-
-  if(c->flag_aomenos1valido){
-    sprintf(c->resposta, "sensor ");
-  }
-}
-
 int boolSensorJaInstalado(float(**matriz)[4][4], int sensor, int equipamento) {
   if((**matriz)[equipamento-1][sensor-1] != -1){
     return 1;
   }else{
     return 0;
+  }
+}
+
+
+char* consultarVariavel(float(**matriz)[4][4], int equipamentoID, int sensorID){
+    static char resposta[50];
+    if((**matriz)[equipamentoID-1][sensorID-1] != -1){
+        sprintf(resposta, "%0.2f", (**matriz)[equipamentoID-1][sensorID-1]);
+    }else{
+        sprintf(resposta, "0%d not installed", sensorID);
+    }
+    return resposta;
+}
+
+
+void lerSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id) {
+  for(int i=0; i<4; i++){
+    if(c->sensores_validos[i] == -1) break;
+    if(c->sensores_validos[i]){
+      strcat(c->resposta, consultarVariavel(&matriz, equipamento_id, c->sensores_solicitados[i]));
+      strcat(c->resposta, " ");
+    }
+  }
+
+  if(c->flag_aomenos1naoexistente && c->flag_aomenos1valido){
+    strcat(c->resposta, "and ");
   }
 }
 
@@ -125,6 +132,7 @@ char* removerSensor(float(**matriz)[4][4], int equipamentoID, int sensorID) {
 
   return resposta;
 }
+
 
 void informarSensoresExistentes(struct EstruturaDeControle *c, int equipamento_id) {
   c->aux = 0;
