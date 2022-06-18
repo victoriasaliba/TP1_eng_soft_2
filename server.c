@@ -1,7 +1,7 @@
 #include "common.h"
 #include "inc_server.h"
 
-int quantidadeAtual = 0;
+extern int quantidadeAtual;
 
 void fechaConexao(int socket){
     close(socket);
@@ -215,7 +215,7 @@ char* comandoRead(struct EstruturaDeControle *c, float(*matriz)[4][4], char *com
 
     c->palavra_atual = strtok(NULL, " "); //depois do in
     int equipamento_id = atoi(c->palavra_atual);
-    
+
     if(elementoInvalido(equipamento_id)){
         return "invalid equipament";
     }
@@ -223,7 +223,7 @@ char* comandoRead(struct EstruturaDeControle *c, float(*matriz)[4][4], char *com
     checarSensoresValidos(c, matriz, equipamento_id, 0);
 
     lerSensoresValidos(c, matriz, equipamento_id);
-    
+
     informarSensoresNaoExistentes(c, equipamento_id);
 
     return c->resposta;

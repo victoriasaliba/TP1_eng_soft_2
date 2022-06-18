@@ -1,7 +1,7 @@
 #include "common.h"
 #include "inc_server.h"
 
-extern int quantidadeAtual;
+int quantidadeAtual = 0;
 
 void iniciarEstrutura(struct EstruturaDeControle *c, char *comando) {
   c->palavra_atual = strtok(comando, " ");
@@ -118,7 +118,7 @@ void removerSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4],
     }
     if(c->flag_aomenos1naoexistente){
         strcat(c->resposta, " ");
-    } 
+    }
 }
 
 
