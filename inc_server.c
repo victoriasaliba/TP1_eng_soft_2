@@ -43,6 +43,53 @@ void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], 
   }
 }
 
+int retornaAcao(char *comandoCompleto){
+    char comando[BUFSZ];
+    sprintf(comando, "%s", comandoCompleto);
+    char escape[] = {"kill"};
+    char *ponteiro;
+    ponteiro = strstr(comando, escape); // procura pela string kill dentro da mensagem recebida
+    if(ponteiro){
+        return KILL;
+    }else{
+        char *palavra = strtok(comando, " ");
+        if (strcmp(palavra, "add") == 0){
+            palavra = strtok(NULL, " ");
+            if(strcmp(palavra,"sensor") == 0){
+                return ADD;
+            }else{
+                return INVALIDO;
+            }
+        }
+        else if (strcmp(palavra, "remove") == 0){
+            palavra = strtok(NULL, " ");
+            if(strcmp(palavra,"sensor") == 0){
+                return REMOVE;
+            }else{
+                return INVALIDO;
+            }
+        }
+        else if (strcmp(palavra, "list") == 0){
+            palavra = strtok(NULL, " ");
+            if(strcmp(palavra,"sensors") == 0){
+                palavra = strtok(NULL, " ");
+                if(strcmp(palavra,"in") == 0){
+                    return LIST;
+                }else{
+                    return INVALIDO;
+                }
+            }else{
+                return INVALIDO;
+            }
+        }
+        else if (strcmp(palavra, "read") == 0){
+            return READ;
+        }
+
+        return INVALIDO;
+    }
+}
+
 
 int boolSensorJaInstalado(float(**matriz)[4][4], int sensor, int equipamento) {
   if((**matriz)[equipamento-1][sensor-1] != -1){

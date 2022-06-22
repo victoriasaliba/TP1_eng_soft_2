@@ -22,6 +22,7 @@ struct EstruturaDeControle {
 
 void iniciarEstrutura(struct EstruturaDeControle *c, char *comando);
 void checarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id, int boolInstalarOuRemover);
+int retornaAcao(char *comandoCompleto);
 
 void instalarSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id);
 void removerSensoresValidos(struct EstruturaDeControle *c, float(*matriz)[4][4], int equipamento_id);

@@ -81,6 +81,54 @@ static void test_server_porta_invalida()
   sput_fail_unless((test1 && test2), "Porta invalida com protocolo válido");
 }
 
+static void test_server_retornaAcao_invalido()
+{
+  int test1 = retornaAcao("add sensors 01 02 03 in 01") == INVALIDO;
+  int test2 = retornaAcao("remove sensors 01 02 03") == INVALIDO;
+  int test3 = retornaAcao("list sensor in 01") == INVALIDO;
+  int test4 = retornaAcao("reads sensors in 02") == INVALIDO;
+  int test5 = retornaAcao("comando aleatorio") == INVALIDO;
+  
+  sput_fail_unless((test1 && test2 && test3 && test4 && test5), "Comandos invalidos");
+}
+
+static void test_server_retornaAcao_add()
+{
+  int test1 = retornaAcao("add sensor 01 02 03 in 01") == ADD;
+  sput_fail_unless((test1), "Comando ADD");
+}
+
+
+static void test_server_retornaAcao_remove()
+{
+  int test1 = retornaAcao("remove sensor 01 02 in 01") == REMOVE;
+  sput_fail_unless((test1), "Comando REMOVE");
+}
+
+
+static void test_server_retornaAcao_list()
+{
+  int test1 = retornaAcao("list sensors in 01") == LIST;
+  sput_fail_unless((test1), "Comando LIST");
+}
+
+static void test_server_retornaAcao_read()
+{
+  int test1 = retornaAcao("read 01 in 01") == READ;
+  sput_fail_unless((test1), "Comando READ");
+}
+
+static void test_server_retornaAcao_kill()
+{
+  int test1 = retornaAcao("remove sensor 01 02 in 01 kill") == KILL;
+  int test2 = retornaAcao("kill remove sensor 01 02 in 01") == KILL;
+  int test3 = retornaAcao("remove killsensor 01 02 in 01") == KILL;
+  int test4 = retornaAcao("remove senskillor 01 02 in 01") == KILL;
+  int test5 = retornaAcao("remove sensor 01 02 kill in 01") == KILL;
+  int test6 = retornaAcao("kill") == KILL;
+  sput_fail_unless((test1 && test2 && test3 && test4 && test5 && test6), "Comando KILL");
+}
+
 int main(int argc, char *argv[])
 {
   sput_start_testing();
@@ -97,6 +145,14 @@ int main(int argc, char *argv[])
   sput_run_test(test_server_protocolo_ipv6);
   sput_run_test(test_server_protocolo_invalido);
   sput_run_test(test_server_porta_invalida);
+
+  sput_enter_suite("Server -> retornaAcao() :");
+  sput_run_test(test_server_retornaAcao_invalido);
+  sput_run_test(test_server_retornaAcao_add);
+  sput_run_test(test_server_retornaAcao_remove);
+  sput_run_test(test_server_retornaAcao_list);
+  sput_run_test(test_server_retornaAcao_read);
+  sput_run_test(test_server_retornaAcao_kill);
 
   sput_finish_testing();
 
