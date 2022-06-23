@@ -17,3 +17,5 @@ testes:
 
 clean:
 	rm *.o client server testes
+
+SHELL=/bin/bash
