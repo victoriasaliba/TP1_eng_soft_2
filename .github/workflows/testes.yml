@@ -9,5 +9,4 @@ jobs:
     steps:
       - run: echo "Rodando testes de cliente e servidor"
       - run: echo "🔎O nome da branch é ${{ github.ref }} e o repositório ${{ github.repository }}."
-        uses: actions/checkout@v3
       - run: make testes
