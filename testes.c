@@ -19,17 +19,27 @@ int setup(char *func, char *argv, char* argc) {
 /**
  * Client tests
  */
+static void test_client_garbage()
+{
+  int test = setup("defineProtocolo", "aaa", "11");
+  sput_fail_unless(test == -1, "Endereço IPv4 inválido : Mais de 3 pontos");
+}
+
 static void test_client_address_ipv4()
 {
   int test = setup("defineProtocolo", "127.0.0.1", "5151");
   sput_fail_unless(test == 0, "Endereço IPv4 válido");
 }
 
-static void test_client_address_ipv4_invalido()
+static void test_client_address_ipv4_invalido_pontos()
 {
   int test = setup("defineProtocolo", "127.0.0.1.152", "5151");
   sput_fail_unless(test == -1, "Endereço IPv4 inválido : Mais de 3 pontos");
-  test = setup("defineProtocolo", "127.256.0.1", "5151");
+}
+
+static void test_client_address_ipv4_invalido_valor()
+{
+  int test = setup("defineProtocolo", "127.256.0.1", "5151");
   sput_fail_unless(test == -1, "Endereço IPv4 inválido : Possui valor acima de 255");
 }
 
@@ -45,11 +55,15 @@ static void test_client_address_ipv6_invalido()
   sput_fail_unless(test == -1, "Endereço IPv6 inválido");
 }
 
-static void test_client_porta_invalida()
+static void test_client_porta_invalida_1()
 {
   int test = setup("defineProtocolo", "127.0.0.1", "0");
   sput_fail_unless(test == -1, "Porta invalida com Endereço IPv4 válido");
-  test = setup("defineProtocolo", "::1", "0");
+}
+
+static void test_client_porta_invalida_2()
+{
+  int test = setup("defineProtocolo", "::1", "0");
   sput_fail_unless(test == -1, "Porta invalida com Endereço IPv6 válido");
 }
 
@@ -74,12 +88,26 @@ static void test_server_protocolo_invalido()
   sput_fail_unless(test == -1, "Protocolo Invalido : Sistema só suporta IPv4 e IPv6");
 }
 
+static void test_server_protocolo_invalido_2()
+{
+  int test = setup("defineProtocoloServidor", "vx", "5151");
+  sput_fail_unless(test == -1, "Protocolo Invalido : Sistema só suporta IPv4 e IPv6");
+}
+
 static void test_server_porta_invalida()
 {
   int test1 = setup("defineProtocoloServidor", "v4", "0") == -1;
   int test2 = setup("defineProtocoloServidor", "v6", "0") == -1;
   sput_fail_unless((test1 && test2), "Porta invalida com protocolo válido");
 }
+
+static void test_server_porta_invalida_2()
+{
+  int test1 = setup("defineProtocoloServidor", "v5", "0") == -1;
+  int test2 = setup("defineProtocoloServidor", "v6", "0") == -1;
+  sput_fail_unless((test1 && test2), "Porta invalida com protocolo inválido");
+}
+
 
 static void test_server_retornaAcao_invalido()
 {
@@ -134,17 +162,22 @@ int main(int argc, char *argv[])
   sput_start_testing();
 
   sput_enter_suite("Client -> defineProtocolo()");
+  sput_run_test(test_client_garbage);
   sput_run_test(test_client_address_ipv4);
-  sput_run_test(test_client_address_ipv4_invalido);
+  sput_run_test(test_client_address_ipv4_invalido_pontos);
+  sput_run_test(test_client_address_ipv4_invalido_valor);
   sput_run_test(test_client_address_ipv6);
   sput_run_test(test_client_address_ipv6_invalido);
-  sput_run_test(test_client_porta_invalida);
+  sput_run_test(test_client_porta_invalida_1);
+  sput_run_test(test_client_porta_invalida_2);
 
   sput_enter_suite("Server -> defineProtocoloServidor() :");
   sput_run_test(test_server_protocolo_ipv4);
   sput_run_test(test_server_protocolo_ipv6);
   sput_run_test(test_server_protocolo_invalido);
+  sput_run_test(test_server_protocolo_invalido_2);
   sput_run_test(test_server_porta_invalida);
+  sput_run_test(test_server_porta_invalida_2);
 
   sput_enter_suite("Server -> retornaAcao() :");
   sput_run_test(test_server_retornaAcao_invalido);

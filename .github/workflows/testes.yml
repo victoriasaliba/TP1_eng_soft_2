@@ -1,0 +1,13 @@
+name: Testes
+on: [push]
+jobs:
+  Testes-servidor-cliente:
+    strategy:
+      matrix: 
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{matrix.os}}
+    steps:
+      - run: echo "Rodando testes de cliente e servidor"
+      - run: echo "🔎O nome da branch é ${{ github.ref }} e o repositório ${{ github.repository }}."
+        uses: actions/checkout@v3
+      - run: make tests
