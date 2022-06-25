@@ -1,0 +1,4 @@
+read 02 in 01
+add sensor 01 02 in 01
+read 02 in 01
+kill

@@ -1,0 +1,6 @@
+list sensors in 01
+add sensor 01 02 03 04 in 02
+list sensors in 02
+remove sensor 01 04 in 02
+list sensors in 02
+kill

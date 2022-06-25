@@ -1,0 +1,6 @@
+remove sensor 01 in 01
+add sensor 01 02 03 04 in 01
+remove sensor 01 in 01
+remove sensor 02 03 in 01
+remove sensor 01 04 in 01
+kill
