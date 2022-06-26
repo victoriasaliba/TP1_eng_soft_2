@@ -4,24 +4,30 @@ Isabelle Vieira Barbosa, Leandro Marques Venceslau de Souza, Victória Rocha Sal
 
 ## Explicação do sistema
 
-O objetivo deste trabalho é praticar os conceitos de Sockets, permitindo a comunicação entre dois
-processos. Para isso, foi implementado um sistema modelo cliente servidor para simular a
-interação entre uma Estação Remota (o servidor) e a Central de Monitoramento (o cliente). A
-Estação Remota deve atender às mensagens da Central de Monitoramento, que pode solicitar ações
+Trata-se de um sistema modelo cliente-servidor que simula a
+interação entre uma Estação Remota (o servidor) e a Central de Monitoramento (o cliente). O sistema permite a comunicação entre esses dois processos, através de Sockets. 
+A Estação Remota atende às mensagens da Central de Monitoramento, que pode solicitar ações
 como:
 - Instalar um ou mais sensores;
 - Remover um ou mais sensores;
 - Consultar equipamento;
 - Consultar variável de processo de um ou mais sensores.
-As versões do cliente
-e do servidor utilizam o protocolo TCP, criado com [socket(AF_INET, SOCK_STREAM, 0)] ou
-com [socket(AF_INET6, SOCK_STREAM, 0)], sendo possível utilizar tanto o IPv4 quanto o
+
+As versões do cliente e do servidor utilizam o protocolo TCP, sendo possível utilizar tanto o IPv4 quanto o
 IPv6.
 
 
 ## Explicação das tecnologias usadas
 
-No sistema foi utilizada a linguagem C, com foco em bibliotecas como "string.h", "stdlib.h", "stdio.h" e outras focadas na parte dos sockets como "arpa/inet.h", "unistd.h", "sys/socket.h", "sys/types.h" e "inttypes.h". Para rodar utilizamos dois terminais Ubuntu 18.04.6 LTS.
+O sistema foi implementado com a linguagem C, com foco em bibliotecas como _string.h_, _stdlib.h_, _stdio.h_ 
+e outras focadas na parte dos sockets como _arpa/inet.h_, _unistd.h_, _sys/socket.h_, _sys/types.h_ e _inttypes.h_. 
+
+Os testes unitários foram feitos através do framework [Sput-Unit](https://www.use-strict.de/sput-unit-testing/), e podem ser rodados com `make testes-unitarios`.
+
+Já os testes de sistema simulam a entrada do usuário (programa cliente) e compara o retorno do servidor com a saída esperada. Para isso, foi utilizado um script, que pode ser rodado com `make testes-sistema`.
+
+Para rodar utilizamos dois terminais Ubuntu 18.04.6 LTS.
+
 
 ## Exemplo de uso
 
